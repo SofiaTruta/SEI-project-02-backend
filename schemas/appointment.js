@@ -1,4 +1,4 @@
-import mongoose, { Schema} from "mongoose"
+import mongoose, { Schema } from "mongoose"
 
 const appointmentSchema = new Schema({
     date: {
@@ -6,12 +6,16 @@ const appointmentSchema = new Schema({
         required: true
     },
     time: {
-        type: String, 
+        type: String,
         required: true
     },
     patientDetails: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Patient'
+    },
+    professionalDetails: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Professional'
     }
 })
 

@@ -18,7 +18,7 @@ app.listen(port, () => {
     console.log(`listening on port: ${port}`)
 })
 
-//DATABASE CONNECTION
+//!DATABASE CONNECTION
 const PROJECT_DATABASE = mongoose.connect(process.env.PROJECT_DATABASE)
 
 //creating the models
@@ -29,7 +29,7 @@ const Appointment = mongoose.model('Appointment', appointmentSchema)
 //*endpoints to *get* data from the database
 app.get('/professionals', async (request, response) => {
     try {
-        const allProfessionals = await Professional.find({})
+        const allProfessionals = await Professional.find({}).populate('appointments')
         response.json(allProfessionals)
     } catch (error) {
         console.log('backend problems getting professionals', error)
@@ -94,6 +94,19 @@ app.get('/appointments/:patientId', async (request, response) => {
     }
 })
 
+app.get('/appointments/', async(request, response) =>{
+    try {
+        const professionalId = request.params.professionalId
+
+        const appointments = await Appointment.find({
+
+        })
+    } catch (error) {
+        console.log('problems at the backend', error)
+    }
+})
+
+
 //*endpoints to *post* data to the database
 app.post('/professionals/add-new-professional', async (request, response) => {
     try {
@@ -104,6 +117,7 @@ app.post('/professionals/add-new-professional', async (request, response) => {
 
         if (!professional) {
             professional = new Professional({
+                email: request.body.email,
                 name: request.body.name,
                 specialty: request.body.specialty,
                 lastLoggedIn: now
@@ -139,6 +153,12 @@ app.post('/appointments/add-new-appointment', async (request, response) => {
             appointment = new Appointment({
                 date: request.body.date,
                 time: request.body.time,
+                professionalDetails: {
+                    _id: request.body.professionalDetails._id,
+                    email: request.body.professionalDetails.email,
+                    name: request.body.professionalDetails.name,
+                    specialty: request.body.professionalDetails.specialty
+                }
             })
             await appointment.save()
         }
@@ -235,17 +255,51 @@ app.put('/patients/:patientId', async (request, response) => {
 })
 
 app.put('/professionals/:professionalId', async (request, response) => {
-try {
-    const professionalId = request.params.professionalId
+    try {
+        const professionalId = request.params.professionalId
 
-    const professional = await Professional.findByIdAndUpdate({
-        _id: professionalId
-    },{
-        name: request.body.name,
-        specialty: request.body.specialty
-    })
-    response.status(200).json({message: 'professional updated successfully'})
-} catch (error) {
-    console.log('backend could not edit that professional', error)
-}
+        const professional = await Professional.findByIdAndUpdate({
+            _id: professionalId
+        }, {
+            name: request.body.name,
+            specialty: request.body.specialty
+        })
+        response.status(200).json({ message: 'professional updated successfully' })
+    } catch (error) {
+        console.log('backend could not edit that professional', error)
+    }
+})
+
+//!GOOGLE OAUTH AND NEW PROFESSIONAL REGISTRATION
+app.post('/professionals/login', async (request, response) => {
+    const now = new Date()
+    try {
+        let professional = await Professional.findOne({
+            email: request.body.email
+        })
+
+        if (!professional) {
+            professional = new Professional({
+                email: request.body.email,
+                name: request.body.name,
+                specialty: request.body.specialty,
+                lastLoggedIn: now
+            })
+
+            await professional.save()
+            console.log(`new professional saved: ${professional}`)
+            response.json(professional)
+        }
+        else {
+            await Professional.findOneAndUpdate({
+                "email": request.body.email
+            }, {
+                lastLoggedIn: now
+            })
+            console.log('lastLoggedIn updated')
+        }
+
+    } catch (error) {
+        console.log('backend problems in authentication', error)
+    }
 })
