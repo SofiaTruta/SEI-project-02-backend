@@ -27,13 +27,15 @@ const Patient = mongoose.model('Patient', patientSchema)
 const Appointment = mongoose.model('Appointment', appointmentSchema)
 
 //*endpoints to *get* data from the database
+
+//gets both professionals and appointments
 app.get('/professionals', async (request, response) => {
     try {
         const allAppointments = await Appointment.find({}).populate('patientDetails')
 
         const allProfessionals = await Professional.find({}).populate('appointments')
-        response.json({allProfessionals, allAppointments}
-            )
+        response.json({ allProfessionals, allAppointments }
+        )
     } catch (error) {
         console.log('backend problems getting professionals', error)
     }
@@ -48,10 +50,9 @@ app.get('/patients', async (request, response) => {
     }
 })
 
-app.get('/appointments', async (request, response) => {
-    // const allAppointments = await Appointment.find({}).populate('patientDetails').populate('professionalDetails')
-    response.json(allAppointments)
-})
+// app.get('/appointments', async (request, response) => {
+//     response.json(allAppointments)
+// })
 
 //get a single patient details
 app.get('/patients/:patientId', async (request, response) => {
@@ -61,7 +62,7 @@ app.get('/patients/:patientId', async (request, response) => {
         const patient = await Patient.findById(patientId)
         console.log(patient)
         response.json(patient)
-       
+
     } catch (error) {
         console.log('problems in the backend finding that patient', error)
     }
@@ -189,18 +190,19 @@ app.post('/appointments/add-new-appointment', async (request, response) => {
                 dateOfBirth: request.body.patientDetails.dateOfBirth,
                 // lastAppointment: appointment._id,
                 currentTreatment: request.body.patientDetails.currentTreatment
-            })}
+            })
+        }
 
-           
-            patient.appointments.push(appointment._id)
-            await patient.save()
 
-            appointment.patientDetails = patient._id
-            await appointment.save()
+        patient.appointments.push(appointment._id)
+        await patient.save()
 
-            console.log('new appointment created!')
-            response.status(200).json({ appointment, patient, professional })
-        
+        appointment.patientDetails = patient._id
+        await appointment.save()
+
+        console.log('new appointment created!')
+        response.status(200).json({ appointment, patient, professional })
+
     }
     catch (error) {
         console.log('problems adding a new appointment', error)
@@ -233,24 +235,31 @@ app.delete('/professionals/:professionalId', async (request, response) => {
 })
 
 //* endpoints to *edit* data
-app.put('/appointments/:appointmentId', async (request, response) => {
+app.put('/appointments/edit-appointment/:appointmentId', async (request, response) => {
     try {
         const appointmentId = request.params.appointmentId
+        console.log(request.body)
 
-        const appointment = await Appointment.findByIdAndUpdate({
-            _id: appointmentId
-        }, {
-            date: request.body.date,
-            time: request.body.time,
-            patientDetails: {
-                _id: request.body.patientDetails._id,
-                name: request.body.patientDetails.name,
-                dateOfBirth: request.body.patientDetails.dateOfBirth,
-                currentTreatment: request.body.patientDetails.currentTreatment
-            }
+        //update the appointment first
+        const appointment = await Appointment.findByIdAndUpdate(
+            appointmentId,
+            {
+                date: request.body.date,
+                time: request.body.time
+            },
+            { new: true } // To return the updated document
+        );
+
+        //update the patient at the same time
+        const patientId = request.body.patientDetails._id
+        const patient = await Patient.findByIdAndUpdate(patientId, {
+            name: request.body.patientDetails.name,
+            dateOfBirth: request.body.patientDetails.dateOfBirth,
+            currentTreatment: request.body.patientDetails.currentTreatment
         })
-        console.log('appointment updated')
-        response.status(200).json({ message: 'appointment updated successfully' })
+        patient.save()
+        console.log('appointment updated', appointment, patient)
+        response.status(200).json({ appointment, patient })
     } catch (error) {
         console.log('backend could not edit that appointment', error)
     }
@@ -260,9 +269,7 @@ app.put('/patients/:patientId', async (request, response) => {
     try {
         const patientId = request.params.patientId
 
-        const patient = await Patient.findByIdAndUpdate({
-            _id: patientId
-        }, {
+        const patient = await Patient.findByIdAndUpdate(patientId, {
             name: request.body.name,
             dateOfBirth: request.body.dateOfBirth,
             currentTreatment: request.body.currentTreatment
