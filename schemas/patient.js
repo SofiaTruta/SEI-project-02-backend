@@ -9,10 +9,10 @@ const patientSchema = new Schema({
         type: Date,
         required: true
     },
-    lastAppointment: {
+    appointments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Appointment'
-    },
+    }],
     currentTreatment: String
 })
 

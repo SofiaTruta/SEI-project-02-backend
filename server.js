@@ -29,8 +29,11 @@ const Appointment = mongoose.model('Appointment', appointmentSchema)
 //*endpoints to *get* data from the database
 app.get('/professionals', async (request, response) => {
     try {
+        const allAppointments = await Appointment.find({}).populate('patientDetails')
+
         const allProfessionals = await Professional.find({}).populate('appointments')
-        response.json(allProfessionals)
+        response.json({allProfessionals, allAppointments}
+            )
     } catch (error) {
         console.log('backend problems getting professionals', error)
     }
@@ -46,7 +49,7 @@ app.get('/patients', async (request, response) => {
 })
 
 app.get('/appointments', async (request, response) => {
-    const allAppointments = await Appointment.find({})
+    // const allAppointments = await Appointment.find({}).populate('patientDetails').populate('professionalDetails')
     response.json(allAppointments)
 })
 
@@ -55,10 +58,10 @@ app.get('/patients/:patientId', async (request, response) => {
     try {
         const patientId = request.params.patientId
 
-        const patient = await Patient.find({
-            _id: patientId
-        })
+        const patient = await Patient.findById(patientId)
+        console.log(patient)
         response.json(patient)
+       
     } catch (error) {
         console.log('problems in the backend finding that patient', error)
     }
@@ -94,7 +97,7 @@ app.get('/appointments/:patientId', async (request, response) => {
     }
 })
 
-app.get('/appointments/', async(request, response) =>{
+app.get('/appointments/', async (request, response) => {
     try {
         const professionalId = request.params.professionalId
 
@@ -150,7 +153,7 @@ app.post('/appointments/add-new-appointment', async (request, response) => {
                 message: 'an appointment already exists for that date and time'
             })
         } else {
-            appointment = new Appointment({
+            appointment = await Appointment.create({
                 date: request.body.date,
                 time: request.body.time,
                 professionalDetails: {
@@ -160,31 +163,47 @@ app.post('/appointments/add-new-appointment', async (request, response) => {
                     specialty: request.body.professionalDetails.specialty
                 }
             })
+
+
             await appointment.save()
         }
 
+        //find professional and push into appointments array
+        let professional = await Professional.findOne({
+            email: request.body.professionalDetails.email
+        })
+
+        professional.appointments.push(appointment._id)
+        await professional.save()
+
+
         //add a new patient if no patient exists yet
         let patient = await Patient.findOne({
-            name: request.body.name,
-            dateOfBirth: request.body.dateOfBirth
+            name: request.body.patientDetails.name,
+            dateOfBirth: request.body.patientDetails.dateOfBirth
         })
 
         if (!patient) {
             patient = new Patient({
                 name: request.body.patientDetails.name,
                 dateOfBirth: request.body.patientDetails.dateOfBirth,
-                lastAppointment: appointment._id,
+                // lastAppointment: appointment._id,
                 currentTreatment: request.body.patientDetails.currentTreatment
-            })
+            })}
 
+           
+            patient.appointments.push(appointment._id)
             await patient.save()
 
+            appointment.patientDetails = patient._id
+            await appointment.save()
+
             console.log('new appointment created!')
-            response.status(200).json({ message: 'new appointment saved!' })
-        }
+            response.status(200).json({ appointment, patient, professional })
+        
     }
     catch (error) {
-        console.log('problems adding a new patient', error)
+        console.log('problems adding a new appointment', error)
     }
 })
 
