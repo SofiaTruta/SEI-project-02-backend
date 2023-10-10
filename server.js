@@ -50,9 +50,10 @@ app.get('/patients', async (request, response) => {
     }
 })
 
-// app.get('/appointments', async (request, response) => {
-//     response.json(allAppointments)
-// })
+app.get('/appointments', async (request, response) => {
+    const allAppointments = await Appointment.find({}).populate('patientDetails')
+    response.json(allAppointments)
+})
 
 //get a single patient details
 app.get('/patients/:patientId', async (request, response) => {
@@ -73,9 +74,7 @@ app.get('/appointments/:appointmentId', async (request, response) => {
     try {
         const appointmentId = request.params.appointmentId
 
-        const appointment = await Appointment.find({
-            _id: appointmentId
-        })
+        const appointment = await Appointment.findById(appointmentId).populate('patientDetails')
         response.json(appointment)
 
     } catch (error) {
