@@ -9,6 +9,12 @@ const appointmentSchema = new Schema({
         type: String,
         required: true
     },
+    status: {
+        type: String,
+        enum: ['upcoming', 'past', 'completed'],
+        required: true,
+        default: 'upcoming'
+    },
     patientDetails: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Patient'

@@ -156,12 +156,8 @@ app.post('/appointments/add-new-appointment', async (request, response) => {
             appointment = await Appointment.create({
                 date: request.body.date,
                 time: request.body.time,
-                professionalDetails: {
-                    _id: request.body.professionalDetails._id,
-                    email: request.body.professionalDetails.email,
-                    name: request.body.professionalDetails.name,
-                    specialty: request.body.professionalDetails.specialty
-                }
+                status: 'upcoming',
+                professionalDetails: request.body.professionalDetails._id
             })
 
 
@@ -187,7 +183,6 @@ app.post('/appointments/add-new-appointment', async (request, response) => {
             patient = new Patient({
                 name: request.body.patientDetails.name,
                 dateOfBirth: request.body.patientDetails.dateOfBirth,
-                // lastAppointment: appointment._id,
                 currentTreatment: request.body.patientDetails.currentTreatment
             })
         }
@@ -263,6 +258,27 @@ app.put('/appointments/edit-appointment/:appointmentId', async (request, respons
         console.log('backend could not edit that appointment', error)
     }
 })
+
+//updating appointment status only
+app.put('/update-appointment-status/:appointmentId', async (req, res) => {
+    const { appointmentId } = req.params;
+    const { status } = req.body;
+
+    try {
+        const appointment = await Appointment.findByIdAndUpdate(appointmentId, { status }, { new: true });
+
+        if (!appointment) {
+            return res.status(404).json({ message: 'Appointment not found' });
+        }
+
+        return res.json(appointment);
+    } catch (error) {
+        console.error('Error updating appointment status:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
 
 app.put('/patients/:patientId', async (request, response) => {
     try {
