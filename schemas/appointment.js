@@ -11,7 +11,7 @@ const appointmentSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['upcoming', 'past', 'completed'],
+        enum: ['upcoming', 'missed', 'completed'],
         required: true,
         default: 'upcoming'
     },

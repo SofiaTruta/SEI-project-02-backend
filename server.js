@@ -56,12 +56,11 @@ app.get('/appointments', async (request, response) => {
 })
 
 //get a single patient details
-app.get('/patients/:patientId', async (request, response) => {
+app.get('/my-patients/:patientId', async (request, response) => {
     try {
         const patientId = request.params.patientId
 
         const patient = await Patient.findById(patientId)
-        console.log(patient)
         response.json(patient)
 
     } catch (error) {
