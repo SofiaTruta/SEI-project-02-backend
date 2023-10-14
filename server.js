@@ -126,7 +126,6 @@ app.post('/professionals/add-new-professional', async (request, response) => {
             })
 
             await professional.save()
-            console.log(`new professional saved: ${professional}`)
             response.json(professional)
         }
         else {
