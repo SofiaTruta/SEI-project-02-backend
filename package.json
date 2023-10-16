@@ -4,8 +4,7 @@
   "description": "backend setup for project-02-SEI-75",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"No tests defined\" && exit 1",
-    "build": "npm run start"
+    "test": "echo \"No tests defined\" && exit 1"
   },
   "author": "Sofia Truta",
   "license": "ISC",
@@ -15,6 +14,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "mongoose": "^7.5.4",
+    "netlify-lambda": "^2.0.16",
     "nodemon": "^3.0.1",
     "serverless-http": "^3.2.0"
   },

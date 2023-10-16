@@ -9,6 +9,8 @@ import mongoose from "mongoose"
 
 //start app
 const app = express()
+
+
 //tell it which dependencies to use
 app.use(cors())
 app.use(bodyParser.json())
