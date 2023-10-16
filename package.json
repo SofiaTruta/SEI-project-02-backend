@@ -4,7 +4,8 @@
   "description": "backend setup for project-02-SEI-75",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"No tests defined\" && exit 1"
+    "test": "echo \"No tests defined\" && exit 1",
+    "build": "npm run start"
   },
   "author": "Sofia Truta",
   "license": "ISC",
