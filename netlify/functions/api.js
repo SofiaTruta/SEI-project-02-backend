@@ -12,11 +12,10 @@ import appointmentSchema from "../../schemas/appointment.js"
 const api = express();
 
 api.use(cors())
-api.use(bodyParser.json)
+api.use(bodyParser.json())
+
 const router = Router();
 router.get("/hello", (req, res) => res.send("Hello World!"));
-
-
 
 //!DATABASE CONNECTION
 const PROJECT_DATABASE = mongoose.connect(process.env.PROJECT_DATABASE)
