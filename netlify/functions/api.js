@@ -4,9 +4,10 @@ import cors from "cors"
 import bodyParser from "body-parser"
 import 'dotenv/config'
 import mongoose from "mongoose"
-import professionalSchema from "./schemas/professional.js"
-import patientSchema from "./schemas/patient.js"
-import appointmentSchema from "./schemas/appointment.js"
+
+import professionalSchema from "../../schemas/professional.js";
+import patientSchema from "../../schemas/patient.js"
+import appointmentSchema from "../../schemas/appointment.js"
 
 const api = express();
 
